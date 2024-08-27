@@ -1,0 +1,60 @@
+ifeq ($(OS),Windows_NT)     # is Windows_NT on XP,2000,7,Vista,10
+    OSNAME = Windows
+	pes_parent_dir:=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+	TEMP:=$(subst /etc/,,$(pes_parent_dir))
+	PROJECTHOME:=$(subst /,\,$(TEMP))
+	RM=@del /q
+	MV=@mv
+else
+	OSNAME = $(shell uname)
+	HOMEPATH=$(HOME)
+	PROJECTHOME=$(shell dirname $(shell pwd))
+	RM=@rm -rf
+	CP=@cp
+	MV=@mv
+endif
+
+ifdef BITS32
+	BITS=32
+else
+	BITS=64
+endif
+
+ifdef DEBUG
+	MODE = debug
+	MODEFLAG = -g -DDEBUG
+else
+	MODE = release
+	MODEFLAG = -O3 -DNDEBUG
+endif
+
+EXECOMPILE=$(MODEFLAG) 
+
+TOPBINDIR=$(HOMEPATH)/bin/
+TOPOBJDIR=$(HOMEPATH)/obj/
+TOPLIBDIR=$(HOMEPATH)/lib/
+
+LIBA=$(TOPLIBDIR)lib$(LIBNAME).a
+LIBSO=$(LIBDIR)lib$(LIBNAME).so
+
+TOPLIBA=$(TOPLIBDIR)lib$(LIBNAME).a
+TOPLIBSO=$(TOPLIBDIR)lib$(LIBNAME).so
+
+ifeq ($(OSNAME),Linux)
+    $(shell mkdir -p $(PROJECTHOME)/obj $(PROJECTHOME)/lib)
+	LD=ar -r
+	SO=gcc -shared -m$(BITS) -o
+	CC=gcc
+	EXE=gcc -o
+	EXECOMPILE+= -m$(BITS) -c -DLINUX -Wall
+	PARAM = -L$(LIBDIR) -l$(LIBNAME) -L/usr/lib/
+else ifeq ($(OSNAME),Windows)
+    $(shell if NOT EXIST $(PROJECTHOME)\\obj (mkdir $(PROJECTHOME)\\obj))
+    $(shell if NOT EXIST $(PROJECTHOME)\\lib (mkdir $(PROJECTHOME)\\lib))
+    LD=ar -r
+    SO=gcc -shared -m$(BITS) -o
+    CC=gcc
+    EXE=gcc -o
+    EXECOMPILE+= -m$(BITS) -c -DWIN32 -Wall
+	PARAM = -L$(LIBDIR) -l$(LIBNAME)
+endif
