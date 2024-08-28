@@ -10,28 +10,31 @@ else ifeq ($(OSNAME),Windows)
     BINDIR:=$(PROJECTHOME)\\bin\\
     OBJDIR:=$(PROJECTHOME)\\obj\\
     LIBDIR:=$(PROJECTHOME)\\lib\\
-    LIBDIR:=$(PROJECTHOME)\\incl\\
+    INCDIR=$(PROJECTHOME)\\util\\
     LIBNAME:=time$(BITS)
 endif
 
 SOURCE=$(wildcard *.c)
-PUBOBJS = $(patsubst %.c,%.o,$(SOURCE))
-MYLIB=$(LIBDIR)lib$(LIBNAME).a
+APPSOBJS = $(patsubst %.c,%.o,$(SOURCE))
+APPS=$(APPSOBJS:%.o=%)
 
-.c.o:
+all: $(APPSOBJS) $(APPS)
+
+%.o:%.c
 	$(CC) $(EXECOMPILE) -fPIC -I $(INCDIR) -o $(OBJDIR)$*.o $*.c
 
-all:$(MYLIB)
+%:%.o
+	$(EXE) $@ $(OBJDIR)$@.o $(PARAM) 
 
-$(MYLIB):$(PUBOBJS)
-	$(LD) $@ $(addprefix $(OBJDIR),$(PUBOBJS))
+install:
+	$(MV) $(APPS) $(TOPBINDIR)
 
 .PHONY : clean
 clean:
 ifeq ($(OSNAME),Windows)
-	$(RM) $(addprefix $(OBJDIR),$(PUBOBJS)) 2>NUL
-	$(RM) $(MYLIB) 2>NUL
+	$(RM) $(addprefix $(OBJDIR),$(APPSOBJS)) $(APPS) 2>NUL
+	$(RM) core.* *.exe 2>NUL
 else
-	$(RM) $(addprefix $(OBJDIR),$(PUBOBJS)) 
-	$(RM) $(MYLIB) 
+	$(RM) $(addprefix $(OBJDIR),$(APPSOBJS)) $(APPS) 
+	$(RM) core.* *.exe 
 endif

@@ -4,7 +4,7 @@
 #include "windows.h"
 #endif
 
-// default date format
+// default date and time format
 char TIMEUTIL_DATEFORMAT[DATELEN]="YYYYMMDD";
 char TIMEUTIL_TIMEFORMAT[TIMELEN]="HHMMSS";
 
