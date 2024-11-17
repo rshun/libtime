@@ -100,32 +100,35 @@ return:
 char* timeutil_getDate(char* ,size_t );
 
 /*
-功能:转换带格式的日期
-参数:
-  参数1---源日期字符串
-  参数2---源日期格式
-  参数3---目标日期字符串
-  参数4---目标日期字符串长度
-  参数5---目标日期格式
-返回: 正确---转换后的带格式日期,NULL---日期非法或目标长度不足
+function: change date from format
+parameter:
+  1. source date string
+  2. source date length
+  3. target date string
+  4. target date length
+  5. target date format
+return:
+  SUCC---format date afte translation, NULL---date is invalid or target length is insufficient
 */
 char* timeutil_transDate(const char* ,const char* ,char* ,size_t ,const char* );
 
 /*
-功能:将时间戳转换成日期
-参数:
-  参数1--时间戳
-  参数2--日期字符串
-  参数3--参数2长度
-返回: 正确---日期字符串,NULL---错误
+function: convert to date from timestamp
+parameter:
+  1. timestamp
+  2. date string
+  3. date string length
+return:
+  SUCC---date string, NULL---timestamp is error or date string's length is not enough
 */
 char* timeutil_convertTimestampToDate(time_t ,char* ,size_t );
 
 /*
-功能:将日期转换成时间戳(时间统一为08:00:00)
-参数:
-  参数1--日期时间字符串
-返回: 正确---时间戳, FAIL---日期格式错误
+function: convert to timestamp from date(time is 08:00:00)
+parameter:
+  1. date string 
+return:
+  SUCC---timestamp, FAIL---date string is invalid.
 */
 time_t timeutil_convertDateToTimestamp(const char* );
 

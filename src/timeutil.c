@@ -510,12 +510,6 @@ for(int i=0;i<maxvalue;i++){
 return FAIL;
 }
 
-/*
-功能: 初始化日期格式
-参数:
-  参数1--日期格式
-返回: SUCC---成功, FAIL---日期格式非法
-*/
 int timeutil_initDateFormat(const char* dateformat)
 {
 
@@ -531,19 +525,12 @@ for(int i=0;i<sizeof(parseDate)/sizeof(parseDate[0]);i++)
      {
       snprintf(TIMEUTIL_DATEFORMAT,sizeof(TIMEUTIL_DATEFORMAT),parseDate[i].dateTimeFormatStr);
       return SUCC;
-  }
+     }
 }
 
 return FAIL;
 }
 
-/*
-功能: 返回当前日期格式
-参数: 
-    参数1--日期格式
-    参数2--格式长度
-返回: 成功---当前默认的日期格式, NULL---长度不足
-*/
 char* timeutil_getDateFormat(char* format,size_t len)
 {
 char* p = format;
@@ -556,12 +543,6 @@ snprintf(format,len,TIMEUTIL_DATEFORMAT);
 return p;
 }
 
-/*
-功能:校验日期否合法
-参数:
-  参数1-日期字符串
-返回:SUCC---日期合法,FAIL---日期非法
-*/
 int timeutil_checkDate(const char *datestr)
 {
 Date date={0};
@@ -576,13 +557,6 @@ else
     return _DateStrToStruct(datestr,dateformat,&date);
 }
 
-/*
-功能:获取当前日期
-参数:
-  参数1-日期字符串
-  参数2-日期字符串长度
-返回: 正确---当前日期,NULL---错误
-*/
 char* timeutil_getDate(char* str,size_t len)
 {
 
@@ -626,14 +600,6 @@ if (_DateStrToStruct(datestr,srcformat,&date) == FAIL)
 return _StructToDateStr(dstformat,dst,len,&date);
 }
 
-/*
-功能:将时间戳转换成日期
-参数:
-  参数1--时间戳
-  参数2--日期字符串
-  参数3--参数2长度
-返回: 正确---日期字符串,NULL---错误
-*/
 char* timeutil_convertTimestampToDate(time_t n,char* str,size_t len)
 {
 Date date={0};
