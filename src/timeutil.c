@@ -33,6 +33,9 @@ typedef struct {
   ConvertToStrFromStruct ConvertFunc;
 } DateTimeFormatParser;
 
+/*
+  parse date string(YYYYMMDD)
+*/
 static int parseYMD(const char* datestr,const char* inputformat, void* data)
 {
 DatePtr date = data;
@@ -49,7 +52,7 @@ return sscanf(datestr,inputformat,&date->year,&date->month,&date->day);
 }
 
 /*
-MM/DD/YY,MM/DD/YYYY
+  parse date string(MM/DD/YY,MM/DD/YYYY)
 */
 static int parseMDY(const char* datestr,const char* inputformat, void* data) 
 {
@@ -73,14 +76,14 @@ return ret;
 }
 
 /*
-DD/MM/YY,DD/MM/YYYY
+  parse date string(DD/MM/YY,DD/MM/YYYY)
 */
 static int parseDMY(const char* datestr,const char* inputformat,  void* data) 
 {
 DatePtr date = data;
 int ret = 0;
 
-/* 校验日期是否均为数字 */
+/* check datestring is digit */
 for(int i=0;i<strlen(datestr);i++){
   if ((i != 2) && (i != 5)){
       if (!isdigit(datestr[i]))
@@ -97,7 +100,7 @@ return ret;
 }
 
 /* 
-    build date string
+    build date string(YYYYMMDD)
 */
 static int buildYMD(const char* inputformat,char* datestr,size_t len,void* data)
 {
@@ -107,7 +110,7 @@ return snprintf(datestr,len,inputformat,date->year,date->month,date->day);
 }
 
 /*
-MM/DD/YYYY和MM/DD/YY
+  build date string(MM/DD/YYYY,MM/DD/YY)
 */
 static int buildMDY(const char* inputformat,char* datestr,size_t len,void* data)
 {
@@ -120,7 +123,7 @@ else
 }
 
 /*
-DD/MM/YYYY和DD/MM/YY
+  build date string(DD/MM/YYYY,DD/MM/YY)
 */
 static int buildDMY(const char* inputformat,char* datestr,size_t len,void* data)
 {
@@ -133,7 +136,7 @@ else
 }
 
 /*
-时间解析及构建函数
+  time parse and build function
 */
 static int parseHMS(const char* timestr,const char* inputformat, void* data)
 {
@@ -184,10 +187,10 @@ DateTimeFormatParser parseTime[] = {
 };
 
 /*
-功能:判断是否字符串全是数字
-参数:
-  参数1--字符串
-返回:SUCC---数字字符串,FAIL---非数字字符串
+function: check if the string is all digits
+parameter:
+  parameter 1--string
+return: SUCC---all digits, FAIL---not all digits
 */
 static int _isdigitstr(const char* str)
 {
@@ -201,10 +204,11 @@ return SUCC;
 }
 
 /*
-功能:判断是否是闰年
-参数:
-  参数1--年份
-返回:SUCC---闰年,1---非闰年
+function: check if the string is NULL or not end with '\0'
+parameter:
+  parameter 1--string
+  parameter 2--max value
+return: SUCC---end with '\0', FAIL---NULL or not end with '\0' in max value
 */
 static int _isleapyear(int year)
 {
@@ -224,13 +228,10 @@ static int _isleapyear(int year)
   }
 }
 
-/* -------------------以下是日期相关函数--------------------------- */
+/* -------------------以下是日期相关函数 date function--------------------------- */
 
 /*
-功能:检查日期是否合法
-参数:
-  参数1---日期结构体
-返回: SUCC---合法，FAIL---非法
+  splite date to struct
 */
 static int _splitdate(DatePtr date)
 {
@@ -269,8 +270,8 @@ return SUCC;
 }
 
 /*
-功能: 获取当前时间与GMT的偏移
-返回: 偏移小时(负数代表东区,正数代表西区)
+function: get the offset between the current time and GMT
+return: offset hours (negative for east, positive for west)
 */
 static int _getOffsetTimeOfZone(void)
 {
@@ -279,11 +280,12 @@ tzset();
 
 return (int)timezone/3600;
 }
+
 /*
-功能:将日期结构体转换成时间戳
-参数:
-  参数1--日期结构体
-返回: 正确---时间戳,FAIL---日期格式错误
+function: convert the date structure to timestamp
+parameter:
+  parameter 1--date structure
+return: SUCC---timestamp, FAIL---date format error
 */
 static time_t _DateStructToTS(DatePtr date)
 {
@@ -320,6 +322,13 @@ return (uli.QuadPart/10000000ULL) - DIFF_BETWEEN_EPOCHS;
 }
 
 /*
+function: convert timestamp to date and time structure
+parameter:
+  parameter 1--timestamp
+  parameter 2--date structure
+  parameter 3--time structure
+return: SUCC---date and time structure, FAIL---error
+
 功能: 将时间戳放到日期和时间结构体
 参数:
   参数1--时间戳
@@ -355,6 +364,13 @@ return SUCC;
 }
 
 /*
+function: convert timestamp to date and time string
+parameter:
+  parameter 1--timestamp
+  parameter 2--date and time string
+  parameter 3--date and time string length
+return: SUCC---date and time string, FAIL---datestring is illeagl
+
 将带有格式的日期转成结构体并校验,如果是2位的年份,默认20xx
   参数1---日期字符串
   参数2---日期格式
@@ -381,6 +397,14 @@ return FAIL;
 }
 
 /*
+function: convert date and time structure to string
+parameter:
+  parameter 1--date format
+  parameter 2--date string
+  parameter 3--date string length
+  parameter 4--date structure
+return SUCC---date string, NULL---length is insufficient
+
 将日期结构体转成对应日期格式
   参数1--日期格式(YYYYMMDD,YYYY/MM/DD,YYYY-MM-DD,DD/MM/YYYY,MM/DD/YYYY,YYYY.MM.DD)
   参数2--日期字符串
@@ -408,6 +432,13 @@ return NULL;
 }
 
 /*
+function: check the date format
+parameter:
+  parameter 1--date string
+  parameter 2--result
+  parameter 3--result length
+return: SUCC---date format, NULL---can't judge the date format or the date format is wrong
+
 功能: 自动检测日期格式
 参数:
    参数1--日期格式字符串
@@ -490,6 +521,12 @@ return NULL;
 }
 
 /*
+function: check if the string is NULL or not end with '\0'
+parameter:
+  parameter 1--string
+  parameter 2--max value
+return: SUCC---end with '\0', FAIL---NULL or not end with '\0' in max value
+
 功能: 校验字符串是否是NULL,有没有结束\0
 参数:
    参数1--字符串
@@ -563,16 +600,7 @@ char* timeutil_getDate(char* str,size_t len)
 return timeutil_convertTimestampToDate(timeutil_getTimestamp(),str,len);
 }
 
-/*
-功能:转换带格式的日期
-参数:
-  参数1---源日期字符串
-  参数2---源日期格式
-  参数3---目标日期字符串
-  参数4---目标日期字符串长度
-  参数5---目标日期格式
-返回: 正确---转换后的带格式日期,NULL---日期非法或目标长度不足
-*/
+
 char* timeutil_transDate(const char* datestr,const char* srcformat,char* dst,size_t len,const char* dstformat)
 {
 Date date={0};
@@ -613,12 +641,6 @@ if (_TsToDateTimeStruct(n,&date,NULL) ==  FAIL)
 return _StructToDateStr(TIMEUTIL_DATEFORMAT,str,len,&date);
 }
 
-/*
-功能:将日期转换成时间戳
-参数:
-  参数1--日期时间字符串
-返回: 正确---时间戳, INVALID_DATE_VALUE---日期格式错误
-*/
 time_t timeutil_convertDateToTimestamp(const char* datestr)
 {
 Date date={0};
@@ -636,15 +658,6 @@ if (_DateStrToStruct(datestr,dateformat,&date) != SUCC)
 return _DateStructToTS(&date);
 }
 
-/*
-功能:日期相加
-参数:
-  参数1--日期字符串
-  参数2--天数(如果是负数，则日期相减)
-  参数3--相加后的日期
-  参数4--参数3的长度
-返回:成功---相加后的日期,NULL---日期非法
-*/
 char* timeutil_addDate(const char *datestr,int len,char* dst,size_t dlen)
 {
 Date date={0};
@@ -677,15 +690,6 @@ if (_TsToDateTimeStruct(_DateStructToTS(&date) + len * TIMESTPOFDAY,&date,NULL) 
 return _StructToDateStr(dateformat,dst,dlen,&date);
 }
 
-/*
-功能:日期减法
-参数:
-  参数1--日期字符串
-  参数2--天数(如果是负数，则日期相加)
-  参数3--减去天数后的日期
-  参数4--参数3的长度
-返回:成功---减去天数的日期,NULL---日期非法
-*/
 char* timeutil_subDate(const char *datestr,int len,char* dst,size_t dlen)
 {
 Date date={0};
@@ -717,13 +721,6 @@ _TsToDateTimeStruct(_DateStructToTS(&date) - len * TIMESTPOFDAY,&date,NULL);
 return _StructToDateStr(dateformat,dst,dlen,&date);
 }
 
-/*
-功能:两个日期相减后的天数
-参数:
-  参数1--日期字符串1
-  参数2--日期字符串2
-返回: INVALID_DATE---日期非法,其他---相减后的天数
-*/
 int timeutil_calcDateDiff(const char* srcdate1,const char* srcdate2)
 {
 Date date1={0},date2={0};
@@ -748,12 +745,6 @@ if (_DateStrToStruct(srcdate2,dateformat2,&date2) != SUCC)
 return (_DateStructToTS(&date1) - _DateStructToTS(&date2))/TIMESTPOFDAY;
 }
 
-/*
-功能:将日期字符串转换成长整型
-参数:
-  参数1--日期字符串
-返回:成功---长整型的日期,FAIL---日期非法
-*/
 long timeutil_convertDateStrToLong(const char* datestr)
 {
 Date date={0};
@@ -771,14 +762,6 @@ if (_DateStrToStruct(datestr,dateformat,&date) == FAIL)
 return date.year * 10000L + date.month * 100 + date.day;
 }
 
-/*
-功能:将长整形日期转换成字符串
-参数:
-  参数1--长整型日期
-  参数2--日期字符串
-  参数3--日期字符串长度
-返回:成功---字符串日期, NULL---日期非法或长度不足
-*/
 char* timeutil_convertLongDateToStr(long longdate,char* datestr,size_t len)
 {
 Date date={0};
@@ -795,14 +778,8 @@ date.day = longdate % 100;
 
 return _StructToDateStr(TIMEUTIL_DATEFORMAT,datestr,len, &date);
 }
-/* -------------------以下是时间相关函数--------------------------- */
+/* -------------------以下是时间相关函数 time function--------------------------- */
 
-/*
-功能:检查时间是否合法
-参数:
-  参数1--时间结构体
-返回:SUCC---合法，FAIL---非法
-*/
 static int _splittime(TimePtr time)
 {
   if ((time->minute > 59) || (time->second > 59) || (time->hour > 23))
@@ -811,12 +788,6 @@ static int _splittime(TimePtr time)
 return SUCC;
 }
 
-/*
-功能:获取当前时间戳
-参数:
-  参数1---无
-返回:当前时间戳
-*/
 time_t timeutil_getTimestamp(void)
 {
 time_t nsec;
@@ -824,14 +795,6 @@ time_t nsec;
 return time(&nsec);
 }
 
-/*
-功能: 自动检测时间格式
-参数:
-   参数1--时间格式字符串
-   参数2--时间格式
-   参数3--日期格式长度
-返回: 成功---时间格式, NULL---时间格式不对
-*/
 static char* _checkTimeFormat(const char* timestr,char* result,size_t len)
 {
 char *p = result;
@@ -870,14 +833,6 @@ else if ((timestr[2] == ':') && (timestr[5] == ':'))
 return NULL;
 }
 
-/*
-将时间结构体转成对应时间格式
-  参数1--时间格式
-  参数2--时间字符串
-  参数3--时间字符串的长度
-  参数4--时间结构体
-返回: 成功---时间字符串, NULL---长度不足
-*/
 static char* _StructToTimeStr(const char* format,char* timestr,size_t len,TimePtr time)
 {
 char* p = timestr;
@@ -897,13 +852,6 @@ for(int i=0;i<(sizeof(parseTime)/sizeof(parseTime[0]));i++){
 return NULL;
 }
 
-/*
-将带有格式的时间转成结构体并校验
-  参数1---时间字符串
-  参数2---时间格式
-  参数3---时间结构体
-返回: SUCC---合法，FAIL---非法
-*/
 static int _TimeStrToStruct(const char* timestr,const char* format,TimePtr time)
 {
 
@@ -920,12 +868,6 @@ static int _TimeStrToStruct(const char* timestr,const char* format,TimePtr time)
 return FAIL;
 }
 
-/*
-功能: 初始化时间格式
-参数:
-  参数1--时间格式
-返回: SUCC---成功, FAIL---日期格式非法
-*/
 int timeutil_initTimeFormat(const char* timeformat)
 {
 
@@ -942,13 +884,6 @@ for (int i=0;i<sizeof(parseTime)/sizeof(parseTime[0]);i++){
 return FAIL;
 }
 
-/*
-功能: 返回当前时间格式
-参数: 
-    参数1--时间格式
-    参数2--格式长度
-返回: 成功---当前默认的时间格式, NULL---长度不足
-*/
 char* timeutil_getTimeFormat(char* timeformat,size_t len)
 {
 char* p = timeformat;
@@ -961,12 +896,6 @@ snprintf(timeformat,len,"%s",TIMEUTIL_TIMEFORMAT);
 return p;
 }
 
-/*
-功能:校验时间否合法
-参数:
-  参数1-时间字符串
-返回:SUCC---时间合法,FAIL---时间非法
-*/
 int timeutil_checkTime(const char *timestr)
 {
 Time time;
@@ -981,13 +910,6 @@ if (_checkTimeFormat(timestr,timeformat,sizeof(timeformat)) == NULL)
 return _TimeStrToStruct(timestr,timeformat,&time);
 }
 
-/*
-功能:获取时间
-参数:
-  参数1--时间字符串
-  参数2--时间长度
-返回:正确---时间字符串,NULL---错误
-*/
 #ifdef LINUX
 char* timeutil_getTime(char* timestr,size_t len)
 {
@@ -1037,16 +959,6 @@ return _StructToTimeStr(TIMEUTIL_TIMEFORMAT,timestr,len,&time);
 }
 #endif
 
-/*
-功能:转换带格式的时间
-参数:
-  参数1---源时间字符串
-  参数2---源时间格式
-  参数3---目标时间字符串
-  参数4---目标时间字符串长度
-  参数5---目标时间格式
-返回: 正确---转换后的带格式时间,NULL---时间非法或目标长度不足
-*/
 char* timeutil_transTime(const char* srctime,const char* srcformat,char* dsttime,size_t len,const char* dstformat)
 {
 Time time={0};
@@ -1065,14 +977,6 @@ if (_TimeStrToStruct(srctime,srcformat,&time) == FAIL)
 return _StructToTimeStr(dstformat,dsttime,len,&time);
 }
 
-/*
-功能:将时间戳转换成时间
-参数:
-  参数1--时间戳
-  参数2--时间字符串
-  参数3--参数2长度
-返回: 正确---时间字符串,NULL---错误
-*/
 char* timeutil_convertTimestampToTime(time_t n,char* str,size_t len)
 {
 Time time={0};
@@ -1088,14 +992,8 @@ _TsToDateTimeStruct(n,NULL,&time);
 return _StructToTimeStr(TIMEUTIL_TIMEFORMAT,str,len,&time);
 }
 
-/* -------------------以下是日期时间相关函数--------------------------- */
-/*
-功能:返回毫秒级日期时间
-参数:
-  参数1--日期时间字符串
-  参数2--参数1长度
-返回:正确---毫秒级的日期时间(YYYY-MM-DD HH24:MM:SS:BBB),NULL---错误
-*/
+/* -------------------以下是日期时间相关函数 datetime function--------------------------- */
+
 #ifdef LINUX
 char* timeutil_getDateTime(char* datetimestr,size_t len)
 {
@@ -1158,14 +1056,6 @@ return p;
 }
 #endif
 
-/*
-功能:将时间戳转换成日期时间
-参数:
-  参数1--时间戳
-  参数2--日期字符串
-  参数3--参数2长度
-返回:正确---日期时间字符串,NULL---错误
-*/
 char* timeutil_convertTimestampToDateTime(time_t n,char* str,size_t len)
 {
 char *p = str;
@@ -1192,12 +1082,6 @@ return p;
 
 /* -------------------以下是其它相关函数--------------------------- */
 
-/* 
-功能: 根据日期字符串获取星期
-参数:
-  参数1-日期时间字符串
-返回: 成功---星期(0-星期天),FAIL---日期格式错误
-*/
 int timeutil_getWeek(const char* datestr)
 {
 Date date={0};
@@ -1232,11 +1116,6 @@ else
 return weekday;
 }
 
-/*
-功能: 获取当前年份
-参数:
-返回:成功---当前年份,FAIL---错误
-*/
 int timeutil_getCurrYear(void)
 {
 Date date={0};
@@ -1247,11 +1126,6 @@ if (_TsToDateTimeStruct(timeutil_getTimestamp(),&date,NULL) == FAIL)
 return date.year;
 }
 
-/*
-功能: 获取当前月份
-参数:
-返回:成功---当前月份,FAIL---错误
-*/
 int timeutil_getCurrMonth(void)
 {
 Date date={0};
@@ -1262,11 +1136,6 @@ if (_TsToDateTimeStruct(timeutil_getTimestamp(),&date,NULL) == FAIL)
 return date.month;
 }
 
-/*
-功能: 获取当前日期
-参数:
-返回:成功---当前日期,FAIL---错误
-*/
 int timeutil_getCurrDay(void)
 {
 Date date={0};
